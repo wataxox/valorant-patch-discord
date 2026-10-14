@@ -1,0 +1,34 @@
+name: VALORANT Discord Test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Send existing patch 13.08 as test
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GEMINI_MODEL: gemini-2.5-flash-lite
+        run: |
+          python - <<'PY'
+          import os
+          from bot import extract_article, summarize, post_discord
+          for key in ('GEMINI_API_KEY', 'DISCORD_WEBHOOK_URL'):
+              if not os.environ.get(key):
+                  raise RuntimeError(f'Missing GitHub secret: {key}')
+          url = 'https://playvalorant.com/ja-jp/news/game-updates/valorant-patch-notes-13-08/'
+          title, body = extract_article(url)
+          summary = summarize(title, body)
+          post_discord('[テスト] ' + title, summary, url)
+          print('Discord test post succeeded; state.json unchanged')
+          PY
