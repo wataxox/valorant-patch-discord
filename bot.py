@@ -34,7 +34,10 @@ def discover():
         parsed = urlparse(href)
         if parsed.netloc != "playvalorant.com":
             continue
-        if not re.fullmatch(r"/ja-jp/news/game-updates/valorant-patch-notes-[0-9]{1,2}-[0-9]{2}/?", parsed.path):
+        if not re.fullmatch(
+            r"/ja-jp/news/game-updates/valorant-patch-notes-\d{1,2}-?\d{2}/?",
+            parsed.path
+        ):
             continue
         normalized = href.rstrip("/") + "/"
         if normalized not in found:
